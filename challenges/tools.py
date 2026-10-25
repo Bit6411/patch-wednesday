@@ -2,17 +2,23 @@
 
 A little "reachability check": you type a host and it runs a shell command to
 look it up. The host you type is pasted into a shell command string, so shell
-metacharacters in the input let you tack on a SECOND command of your choice --
+punctuation in the input lets you tack on a SECOND command of your choice --
 this is command (OS) injection.
 
-YOUR JOB: `run_check` must treat the whole input as a single host argument, so
-no extra command can ever run, whatever punctuation is in it. Validating the
-host and NOT using a shell is the fix.
+YOUR JOB: `run_check` must treat the whole input as a single argument, so no
+extra command can ever run, whatever punctuation is in it. The fix is to stop
+using a shell: pass the program and its arguments as a list.
 
-HINT: subprocess.run(["echo", "resolving", host]) with shell=False. Pass the
-arguments as a list, never as one formatted string with shell=True.
+HINT (works on windows, mac and linux):
+    subprocess.run(
+        [sys.executable, "-c", "import sys; print('resolving', sys.argv[1])", host],
+        capture_output=True, text=True, timeout=5,
+    )
+`sys.executable` is the python that's running this app, so it exists everywhere,
+and with a list (no shell=True) `host` can only ever be one argument.
 """
 import subprocess
+import sys  # noqa: F401  (you'll want it for the fix)
 
 
 def run_check(host):
