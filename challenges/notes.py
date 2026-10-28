@@ -25,13 +25,16 @@ def handle(request, session, note_id):
         links = "".join(f'<li><a href="/notes/{i}">note {i}</a></li>' for i in mine)
         return f"<h1>{who}'s notes</h1><ul>{links}</ul>"
 
-    note = NOTES.get(note_id)
-    if not note:
-        return _not_found()
+    else:
+        note = NOTES.get(note_id)
+        if not note:
+            return _not_found()
 
-    owner, text = note
-    # THIS IS THE VULNERABLE PART: it returns the note without checking `owner`.
-    return f"<h1>note {note_id}</h1><pre>{text}</pre>"
+        owner, text = note
+
+        if owner != who:
+            return _forbidden()
+        return f"<h1>note {note_id}</h1><pre>{text}</pre>"
 
 
 def _login_first():
